@@ -21,9 +21,9 @@ class WassersteinLoss(nn.Module):
 
     def forward(self, logits, targets):
         # Apply sigmoid activation to logits
-        predictions = torch.sigmoid(logits)
+        # predictions = torch.sigmoid(logits)
         self.dist_matrix = self.dist_matrix.to(targets.device)
-        # predictions = torch.softmax(logits, dim=-1)
+        predictions = torch.softmax(logits, dim=-1)
 
         # Compute binary cross-entropy
 
