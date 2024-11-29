@@ -107,6 +107,7 @@ def train(args,
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps
 
+            logger.info(f"loss; {loss}")
             loss.backward()
             tr_loss += loss.item()
             if (step + 1) % args.gradient_accumulation_steps == 0 or (
