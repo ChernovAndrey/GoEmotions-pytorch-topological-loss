@@ -11,7 +11,7 @@ def get_distance_matrix(file_path_correlations, label2id):
 
 
 class WassersteinLoss(nn.Module):
-    def __init__(self, dist_matrix: torch.tensor, agg_type: str = 'min',
+    def __init__(self, dist_matrix: torch.tensor, agg_type: str = 'mean',
                  weight=None):  # agg_type in ('min', 'max', 'mean')
         super(WassersteinLoss, self).__init__()
         self.weight = weight
@@ -27,21 +27,48 @@ class WassersteinLoss(nn.Module):
 
         if self.agg_type == 'min':
             # Create a mask of the same shape as targets, where True indicates non-zero elements
+            # Create a mask of the same shape as targets, where True indicates non-zero elements
             mask = targets != 0  # Shape [batch_size, n_labels]
 
             # Expand the mask to gather relevant rows from the distance matrix
             # This step creates a 3D tensor of shape [batch_size, n_labels, n_labels]
             gathered_distances = self.dist_matrix.unsqueeze(0).expand(targets.size(0), -1, -1)
-            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('inf'))
+            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('nan'))
 
-            # Compute the minimum along the last dimension (corresponding to n_labels in dist_matrix)
-            cost, _ = gathered_distances.min(dim=-2)
+            # Compute the minimum or maximum along the last dimension, ignoring NaN
+            cost, _ = torch.nanmin(gathered_distances, dim=-2)  # Minimum
 
             # cost, _ = self.dist_matrix[torch.nonzero(targets).reshape(-1)].min(axis=0)
         elif self.agg_type == 'max':
-            cost, _ = self.dist_matrix[torch.nonzero(targets).reshape(-1)].max(axis=0)
+            # Create a mask of the same shape as targets, where True indicates non-zero elements
+            mask = targets != 0  # Shape [batch_size, n_labels]
+
+            # Expand the mask to gather relevant rows from the distance matrix
+            # This step creates a 3D tensor of shape [batch_size, n_labels, n_labels]
+            gathered_distances = self.dist_matrix.unsqueeze(0).expand(targets.size(0), -1, -1)
+            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('nan'))
+
+            # Compute the minimum or maximum along the last dimension, ignoring NaN
+            cost, _ = torch.nanmax(gathered_distances, dim=-2)  # Maximum
+
+            # cost, _ = self.dist_matrix[torch.nonzero(targets).reshape(-1)].max(axis=0)
         elif self.agg_type == 'mean':
-            cost = self.dist_matrix[torch.nonzero(targets).reshape(-1)].mean(axis=0)
+            # Assuming self.dist_matrix is a 2D tensor of shape [n_labels, n_labels]
+            # and targets is a 2D tensor of shape [batch_size, n_labels]
+
+            # Create a mask of the same shape as targets, where True indicates non-zero elements
+            mask = targets != 0  # Shape [batch_size, n_labels]
+
+            # Expand the mask to gather relevant rows from the distance matrix
+            # This step creates a 3D tensor of shape [batch_size, n_labels, n_labels]
+            gathered_distances = self.dist_matrix.unsqueeze(0).expand(targets.size(0), -1, -1)
+            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('nan'))
+
+            # Compute the mean along the last dimension, ignoring NaN
+            cost = torch.nanmean(gathered_distances, dim=-2)  # Mean
+
+            # cost_mean will have shape [batch_size, n_labels]
+            # cost = self.dist_matrix[torch.nonzero(targets).reshape(-1)].mean(axis=0)
         else:
             assert False, f"aggregation type: {self.agg_type} is not supported"
         loss = torch.sum(predictions * cost, dim=-1)

@@ -104,8 +104,6 @@ def train(args,
             outputs = model(**inputs)
 
             loss = outputs[0]
-            logger.info(f"loss: {loss}")
-            print(f"loss: {loss}")
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps
 
