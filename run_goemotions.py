@@ -228,7 +228,7 @@ def main(cli_args):
 
     # with open(os.path.join("config", config_filename)) as f:
     #     args = AttrDict(json.load(f))
-    logger.info("Training/evaluation parameters {}".format(args))
+    # logger.info("Training/evaluation parameters {}".format(args))
 
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
 
