@@ -4,12 +4,14 @@ import logging
 
 import torch
 import numpy as np
-
+import sys
 from sklearn.metrics import precision_recall_fscore_support, accuracy_score
 
 
 def init_logger():
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
+    logging.basicConfig(
+        stream=sys.stdout,  # Ensure logs are sent to stdout
+        format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
                         datefmt='%m/%d/%Y %H:%M:%S',
                         level=logging.INFO)
 
