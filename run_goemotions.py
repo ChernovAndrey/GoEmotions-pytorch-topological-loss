@@ -8,15 +8,16 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import tqdm, trange
-
+from types import SimpleNamespace
 
 # Monkey patch collections
-import collections
-import collections.abc
-for type_name in collections.abc.__all__:
-    setattr(collections, type_name, getattr(collections.abc, type_name))
+# import collections
+# import collections.abc
+#
+# for type_name in collections.abc.__all__:
+#     setattr(collections, type_name, getattr(collections.abc, type_name))
 
-from attrdict import AttrDict
+# from attrdict import AttrDict
 
 from transformers import (
     BertConfig,
@@ -155,7 +156,6 @@ def train(args,
 
 
 def evaluate(args, model, eval_dataset, mode, global_step=None):
-    results = {}
     eval_sampler = SequentialSampler(eval_dataset)
     eval_dataloader = DataLoader(eval_dataset, sampler=eval_sampler, batch_size=args.eval_batch_size)
 
@@ -207,7 +207,8 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    output_eval_file = os.path.join(output_dir, "{}-{}.txt".format(mode, global_step) if global_step else "{}.txt".format(mode))
+    output_eval_file = os.path.join(output_dir,
+                                    "{}-{}.txt".format(mode, global_step) if global_step else "{}.txt".format(mode))
     with open(output_eval_file, "w") as f_w:
         logger.info("***** Eval results on {} dataset *****".format(mode))
         for key in sorted(results.keys()):
@@ -219,9 +220,14 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
 
 def main(cli_args):
     # Read from config file and make args
-    config_filename = "{}.json".format(cli_args.taxonomy)
+    # config_filename = "{}.json".format(cli_args.taxonomy)
+    config_filename = f"{cli_args.taxonomy}.json"
     with open(os.path.join("config", config_filename)) as f:
-        args = AttrDict(json.load(f))
+        args = json.load(f)
+        args = SimpleNamespace(**args)  # Convert the dictionary to a SimpleNamespace
+
+    # with open(os.path.join("config", config_filename)) as f:
+    #     args = AttrDict(json.load(f))
     logger.info("Training/evaluation parameters {}".format(args))
 
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
@@ -266,7 +272,8 @@ def main(cli_args):
     results = {}
     if args.do_eval:
         checkpoints = list(
-            os.path.dirname(c) for c in sorted(glob.glob(args.output_dir + "/**/" + "pytorch_model.bin", recursive=True))
+            os.path.dirname(c) for c in
+            sorted(glob.glob(args.output_dir + "/**/" + "pytorch_model.bin", recursive=True))
         )
         if not args.eval_all_checkpoints:
             checkpoints = checkpoints[-1:]
