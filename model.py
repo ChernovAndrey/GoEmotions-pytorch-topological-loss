@@ -11,7 +11,7 @@ def get_distance_matrix(file_path_correlations, label2id):
 
 
 class WassersteinLoss(nn.Module):
-    def __init__(self, dist_matrix: torch.tensor, agg_type: str = 'mean',
+    def __init__(self, dist_matrix: torch.tensor, agg_type: str,
                  weight=None):  # agg_type in ('min', 'max', 'mean')
         super(WassersteinLoss, self).__init__()
         self.weight = weight
@@ -20,9 +20,10 @@ class WassersteinLoss(nn.Module):
 
     def forward(self, logits, targets):
         # Apply sigmoid activation to logits
-        # predictions = torch.sigmoid(logits)
+        predictions = torch.sigmoid(logits)
         self.dist_matrix = self.dist_matrix.to(targets.device)
-        predictions = torch.softmax(logits, dim=-1)
+        # predictions = torch.softmax(logits, dim=-1)
+
         # Compute binary cross-entropy
 
         if self.agg_type == 'min':
@@ -92,7 +93,7 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.use_wasserstein_loss = use_wasserstein_loss
         if self.use_wasserstein_loss:
             dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
-            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'mean')
+            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
 
