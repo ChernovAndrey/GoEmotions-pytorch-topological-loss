@@ -105,6 +105,7 @@ def train(args,
 
             loss = outputs[0]
             logger.info(f"loss: {loss}")
+            print(f"loss: {loss}")
             if args.gradient_accumulation_steps > 1:
                 loss = loss / args.gradient_accumulation_steps
 
@@ -228,23 +229,11 @@ def main(cli_args):
 
     # with open(os.path.join("config", config_filename)) as f:
     #     args = AttrDict(json.load(f))
-    # logger.info("Training/evaluation parameters {}".format(args))
+    logger.info("Training/evaluation parameters {}".format(args))
 
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
 
-    # init_logger()
-    # Create a logger
-    logger = logging.getLogger("kaggle_logger")
-    logger.setLevel(logging.INFO)
-
-    # Add a StreamHandler for stdout
-    stream_handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%m/%d/%Y %H:%M:%S')
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
-
-    # Log a message
-    logger.info("This is a test log message")
+    init_logger()
     set_seed(args)
 
     processor = GoEmotionsProcessor(args)
