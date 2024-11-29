@@ -232,7 +232,19 @@ def main(cli_args):
 
     args.output_dir = os.path.join(args.ckpt_dir, args.output_dir)
 
-    init_logger()
+    # init_logger()
+    # Create a logger
+    logger = logging.getLogger("kaggle_logger")
+    logger.setLevel(logging.INFO)
+
+    # Add a StreamHandler for stdout
+    stream_handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%m/%d/%Y %H:%M:%S')
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    # Log a message
+    logger.info("This is a test log message")
     set_seed(args)
 
     processor = GoEmotionsProcessor(args)
