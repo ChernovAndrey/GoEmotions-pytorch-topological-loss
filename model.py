@@ -17,6 +17,7 @@ class WassersteinLoss(nn.Module):
         self.weight = weight
         self.dist_matrix = dist_matrix
         self.agg_type = agg_type
+        print(f'agg type: {self.agg_type}')
 
     def forward(self, logits, targets):
         # Apply sigmoid activation to logits
@@ -48,10 +49,10 @@ class WassersteinLoss(nn.Module):
             # Expand the mask to gather relevant rows from the distance matrix
             # This step creates a 3D tensor of shape [batch_size, n_labels, n_labels]
             gathered_distances = self.dist_matrix.unsqueeze(0).expand(targets.size(0), -1, -1)
-            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('nan'))
+            gathered_distances = gathered_distances.masked_fill(~mask.unsqueeze(-1), float('-inf'))
 
-            # Compute the minimum or maximum along the last dimension, ignoring NaN
-            cost, _ = torch.nanmax(gathered_distances, dim=-2)  # Maximum
+            # Compute the minimum along the last dimension (corresponding to n_labels in dist_matrix)
+            cost, _ = gathered_distances.max(dim=-2)
 
             # cost, _ = self.dist_matrix[torch.nonzero(targets).reshape(-1)].max(axis=0)
         elif self.agg_type == 'mean':
