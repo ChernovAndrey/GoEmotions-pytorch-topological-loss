@@ -74,7 +74,9 @@ class WassersteinLoss(nn.Module):
             # cost = self.dist_matrix[torch.nonzero(targets).reshape(-1)].mean(axis=0)
         else:
             assert False, f"aggregation type: {self.agg_type} is not supported"
-        loss = torch.sum(predictions * cost, dim=-1)
+
+        # loss = torch.sum(predictions * cost, dim=-1)
+        loss = -torch.sum(torch.log(1 - predictions + 1e-7) * cost, dim=1) / torch.sum(cost, dim=1)  # var1
 
         # Apply weights if provided
         if self.weight is not None:
@@ -95,7 +97,7 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.use_wasserstein_loss = use_wasserstein_loss
         if self.use_wasserstein_loss:
             dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
-            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'max')
+            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
 
