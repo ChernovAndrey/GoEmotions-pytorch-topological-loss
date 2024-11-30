@@ -76,7 +76,7 @@ class WassersteinLoss(nn.Module):
             assert False, f"aggregation type: {self.agg_type} is not supported"
 
         # loss = torch.sum(predictions * cost, dim=-1)
-        loss = -torch.sum(torch.log(1 - predictions + 1e-7) * cost, dim=1) / torch.sum(cost, dim=1)  # var1
+        loss = -torch.sum(torch.log(1 - predictions + 1e-7) * cost, dim=1) #/ torch.sum(cost, dim=1)  # var1
 
         # Apply weights if provided
         if self.weight is not None:
