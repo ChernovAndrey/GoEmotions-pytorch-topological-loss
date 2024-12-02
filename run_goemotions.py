@@ -9,6 +9,7 @@ import torch
 from torch.utils.data import DataLoader, RandomSampler, SequentialSampler
 from tqdm import tqdm, trange
 from types import SimpleNamespace
+import torch.nn.functional as F
 
 # Monkey patch collections
 # import collections
@@ -18,6 +19,8 @@ from types import SimpleNamespace
 #     setattr(collections, type_name, getattr(collections.abc, type_name))
 
 # from attrdict import AttrDict
+
+use_topological_loss = True
 
 from transformers import (
     BertConfig,
@@ -189,7 +192,10 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
             eval_loss += tmp_eval_loss.mean().item()
         nb_eval_steps += 1
         if preds is None:
-            preds = 1 / (1 + np.exp(-logits.detach().cpu().numpy()))  # Sigmoid
+            if use_topological_loss:
+                preds = F.softmax(logits, dim=-1).detach().cpu().numpy()
+            else:
+                preds = 1 / (1 + np.exp(-logits.detach().cpu().numpy()))  # Sigmoid
             out_label_ids = inputs["labels"].detach().cpu().numpy()
         else:
             preds = np.append(preds, 1 / (1 + np.exp(-logits.detach().cpu().numpy())), axis=0)  # Sigmoid

@@ -97,7 +97,7 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.use_wasserstein_loss = use_wasserstein_loss
         if self.use_wasserstein_loss:
             dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
-            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'mean')
+            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
 
