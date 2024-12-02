@@ -208,8 +208,24 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
     results = {
         "loss": eval_loss
     }
-    preds[preds > args.threshold] = 1
-    preds[preds <= args.threshold] = 0
+    # preds[preds > args.threshold] = 1
+    # preds[preds <= args.threshold] = 0
+
+    # Identify rows where all values are less than or equal to the threshold
+    no_values_above_threshold = np.all(preds <= args.threshold, axis=1)
+    print(f'no values shape:{no_values_above_threshold}')
+    # Get the maximum value in each row
+    max_values = np.max(preds, axis=1)
+
+    # Create a mask for the maximum values in rows where no values exceed the threshold
+    max_value_mask = (preds > (max_values[:, None] - 1e-7)) & no_values_above_threshold[:, None]
+
+    # Set the maximum value to 1 for rows where no values exceed the threshold
+    preds[max_value_mask] = 1
+
+    # Apply threshold logic: set values > threshold to 1, else to 0
+    preds = np.where(preds > args.threshold, 1, 0)
+
     result = compute_metrics(out_label_ids, preds)
     results.update(result)
 

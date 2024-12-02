@@ -12,8 +12,8 @@ def init_logger():
     logging.basicConfig(
         stream=sys.stdout,  # Ensure logs are sent to stdout
         format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
-                        datefmt='%m/%d/%Y %H:%M:%S',
-                        level=logging.INFO)
+        datefmt='%m/%d/%Y %H:%M:%S',
+        level=logging.INFO)
 
 
 def set_seed(args):
@@ -25,6 +25,9 @@ def set_seed(args):
 
 
 def compute_metrics(labels, preds):
+    print('number of non predicted labels:')
+    print(np.sum(preds.sum(axis=1) <= 1e-3))
+
     assert len(preds) == len(labels)
     results = dict()
 
