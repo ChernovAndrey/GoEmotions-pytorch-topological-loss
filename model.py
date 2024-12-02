@@ -86,7 +86,7 @@ class WassersteinLoss(nn.Module):
 
 
 class BertForMultiLabelClassification(BertPreTrainedModel):
-    def __init__(self, config, use_wasserstein_loss=True):
+    def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
 
@@ -94,8 +94,11 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
         self.classifier = nn.Linear(config.hidden_size, self.config.num_labels)
 
-        self.use_wasserstein_loss = use_wasserstein_loss
-        if self.use_wasserstein_loss:
+        # Check for 'use_topological_loss' and add it with a default value of False if missing
+        if not hasattr(config, 'use_topological_loss'):
+            config.use_topological_loss = False
+        self.use_topological_loss = config.use_topological_loss
+        if self.use_topological_loss:
             dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
             self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
