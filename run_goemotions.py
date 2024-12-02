@@ -198,9 +198,10 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
             out_label_ids = inputs["labels"].detach().cpu().numpy()
         else:
             if args.use_topological_loss:
-                preds = F.softmax(logits, dim=-1).detach().cpu().numpy()
+                cur_preds = F.softmax(logits, dim=-1).detach().cpu().numpy()
             else:
-                preds = 1 / (1 + np.exp(-logits.detach().cpu().numpy()))  # Sigmoid
+                cur_preds = 1 / (1 + np.exp(-logits.detach().cpu().numpy()))  # Sigmoid
+            preds = np.append(preds, cur_preds, axis=0)
             out_label_ids = np.append(out_label_ids, inputs["labels"].detach().cpu().numpy(), axis=0)
 
     eval_loss = eval_loss / nb_eval_steps
@@ -209,8 +210,6 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
     }
     preds[preds > args.threshold] = 1
     preds[preds <= args.threshold] = 0
-    print(preds.shape)
-    print(out_label_ids.shape)
     result = compute_metrics(out_label_ids, preds)
     results.update(result)
 
