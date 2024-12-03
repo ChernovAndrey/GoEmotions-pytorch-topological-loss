@@ -32,5 +32,5 @@
   "save_steps": 170,
   "learning_rate": 5e-5,
   "threshold": 0.3,
-  "use_topological_loss": true
+  "use_topological_loss": false
 }
