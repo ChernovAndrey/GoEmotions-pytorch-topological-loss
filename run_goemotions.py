@@ -273,8 +273,9 @@ def main(cli_args):
         num_labels=len(label_list),
         finetuning_task=args.task,
         id2label={str(i): label for i, label in enumerate(label_list)},
-        label2id={label: i for i, label in enumerate(label_list)}
+        label2id={label: i for i, label in enumerate(label_list)},
     )
+    config.use_topological_loss = args.use_topological_loss
     tokenizer = BertTokenizer.from_pretrained(
         args.tokenizer_name_or_path,
     )
