@@ -5,7 +5,25 @@ import logging
 import torch
 import numpy as np
 import sys
-from sklearn.metrics import precision_recall_fscore_support, accuracy_score
+from sklearn.metrics import precision_recall_fscore_support, accuracy_score, multilabel_confusion_matrix
+
+
+def error_matrix(y_true, y_pred):
+    n_labels = y_true.shape[1]
+
+    # Initialize the misclassification matrix
+    error_matrix = np.zeros((n_labels, n_labels), dtype=int)
+
+    # Compute the error matrix
+    for i in range(n_labels):
+        for j in range(n_labels):
+            # Count cases where label i is 1 in y_true but misclassified as j in y_pred
+            if i == j:
+                error_matrix[i, j] = np.sum((y_true[:, i] == 1) & (y_pred[:, j] == 1))
+            else:
+                error_matrix[i, j] = np.sum((y_true[:, i] == 1) & (y_pred[:, j] == 1) & (y_true[:, j] == 0))
+
+    return error_matrix
 
 
 def init_logger():
@@ -41,5 +59,7 @@ def compute_metrics(labels, preds):
     results["weighted_precision"], results["weighted_recall"], results[
         "weighted_f1"], _ = precision_recall_fscore_support(
         labels, preds, average="weighted")
+    results['multilabel_confusion_matrix'] = multilabel_confusion_matrix(labels, preds)
+    results['error_matrix'] = error_matrix(labels, preds)
 
     return results
