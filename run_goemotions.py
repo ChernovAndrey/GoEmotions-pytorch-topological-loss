@@ -213,7 +213,6 @@ def evaluate(args, model, eval_dataset, mode, global_step=None):
 
     # Identify rows where all values are less than or equal to the threshold
     no_values_above_threshold = np.all(preds <= args.threshold, axis=1)
-    print(f'no values shape:{no_values_above_threshold}')
     # Get the maximum value in each row
     max_values = np.max(preds, axis=1)
 
