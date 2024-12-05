@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def get_distance_matrix(file_path_correlations, label2id):
-    distance = (1. - pd.read_csv(file_path_correlations, index_col=0))/2.
+    distance = 2*(1. - pd.read_csv(file_path_correlations, index_col=0))
     distance_indexes = distance.rename(index=label2id, columns=label2id)
     return distance_indexes, distance
 
@@ -100,8 +100,8 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.use_topological_loss = config.use_topological_loss
         print(f'use topological loss:{self.use_topological_loss}')
         if self.use_topological_loss:
-            # dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
-            dist, _ = get_distance_matrix('correlation_train_neutral_0.csv', config.label2id)
+            dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
+            # dist, _ = get_distance_matrix('correlation_train_neutral_0.csv', config.label2id)
             self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
