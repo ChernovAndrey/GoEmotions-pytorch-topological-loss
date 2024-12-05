@@ -5,7 +5,7 @@ import pandas as pd
 
 
 def get_distance_matrix(file_path_correlations, label2id):
-    distance = 1. - pd.read_csv(file_path_correlations, index_col=0)
+    distance = (1. - pd.read_csv(file_path_correlations, index_col=0))/2.
     distance_indexes = distance.rename(index=label2id, columns=label2id)
     return distance_indexes, distance
 
@@ -76,7 +76,7 @@ class WassersteinLoss(nn.Module):
             assert False, f"aggregation type: {self.agg_type} is not supported"
 
         # loss = torch.sum(predictions * cost, dim=-1)
-        loss = -torch.sum(torch.log(1 - predictions + 1e-7) * cost, dim=1)# / torch.sum(cost, dim=1)  # var1
+        loss = -torch.sum(torch.log(1 - predictions + 1e-14) * cost, dim=1)# / torch.sum(cost, dim=1)  # var1
 
         # Apply weights if provided
         if self.weight is not None:
@@ -101,7 +101,7 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         print(f'use topological loss:{self.use_topological_loss}')
         if self.use_topological_loss:
             dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
-            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'max')
+            self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
 
