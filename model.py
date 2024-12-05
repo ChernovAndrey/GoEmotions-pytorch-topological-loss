@@ -100,7 +100,8 @@ class BertForMultiLabelClassification(BertPreTrainedModel):
         self.use_topological_loss = config.use_topological_loss
         print(f'use topological loss:{self.use_topological_loss}')
         if self.use_topological_loss:
-            dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
+            # dist, _ = get_distance_matrix('correlation_train.csv', config.label2id)
+            dist, _ = get_distance_matrix('correlation_train_neutral_0.csv', config.label2id)
             self.loss_fct = WassersteinLoss(torch.tensor(dist.values), 'min')
         else:
             self.loss_fct = nn.BCEWithLogitsLoss()
